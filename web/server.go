@@ -8,5 +8,5 @@ import (
 func RunServer() {
 	r := Router()
 
-	log.Fatalln(http.ListenAndServe(":8000", r))
+	log.Fatalln(http.ListenAndServe(":8080", r))
 }
