@@ -2,6 +2,7 @@ package web
 
 import (
 	"html/template"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -47,13 +48,15 @@ func FormArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateArticle(w http.ResponseWriter, r *http.Request) {
+	defer http.Redirect(w, r, "/", http.StatusSeeOther)
+	rand.Seed(int64(time.Now().Nanosecond()))
+	id := rand.Intn(1000000)
 	title := r.FormValue("title")
 	text := r.FormValue("text")
-	date := time.Now()
+	date := time.Now().Format("01-02-2006 Monday")
 	rate, _ := strconv.ParseFloat(r.FormValue("rate"), 32)
 	name := r.FormValue("AuthorName")
 	bio := r.FormValue("AuthorBio")
 	age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
-	articles = append(articles, db.Article{Title: title, Text: text, Date: date, Rate: rate, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
-	http.Redirect(w, r, "/", http.StatusOK)
+	articles = append(articles, db.Article{Id: id, Title: title, Text: text, Date: date, Rate: rate, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
 }
