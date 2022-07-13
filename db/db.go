@@ -1,14 +1,10 @@
 package db
 
-import (
-	"time"
-)
-
 type Article struct {
 	Id    int
 	Title string
 	Text  string
-	Date  time.Time
+	Date  string
 	Rate  float64
 	Athor *Athor
 }
@@ -18,4 +14,3 @@ type Athor struct {
 	Bio  string
 	Age  int
 }
-
