@@ -11,9 +11,11 @@
 <body>
 	<h1>hello</h1>
 	<h5><a href="/form">Create Article</a></h5>
+	<h5><a href="/deleteform">Delete Article</a></h5>
 	<ul>
 		{{range .}}
 		<div>
+			<li>{{.Id}}</li>
 			<li>{{.Title}}</li>
 			<li>{{.Text}}</li>
 			<li>{{.Date}}</li>
