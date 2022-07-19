@@ -20,7 +20,9 @@ func Router() *mux.Router {
 	r.HandleFunc("/form", FormArticle).Methods("GET")
 	r.HandleFunc("/create", CreateArticle).Methods("POST")
 	r.HandleFunc("/update/{id}", UpdateArticle).Methods("GET")
+	r.HandleFunc("/deleteform", DeleteArticleForm).Methods("GET")
 	r.HandleFunc("/update", Update).Methods("POST")
+	r.HandleFunc("/delete", DeleteArticle).Methods("DELETE")
 	return r
 }
 
@@ -79,4 +81,24 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	bio := r.FormValue("AuthorBio")
 	age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
 	articles = append(articles, db.Article{Title: title, Text: text, Date: date, Rate: rate, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
+}
+
+func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
+	tpl := template.Must(template.ParseFiles("D:/Go/TMOH/templates/delete.html"))
+	err := tpl.Execute(w, "")
+	if err != nil {
+		http.Error(w, "Can't execute template", http.StatusInternalServerError)
+		return
+	}
+}
+
+func DeleteArticle(w http.ResponseWriter, r *http.Request) {
+	defer http.Redirect(w, r, "/", http.StatusSeeOther)
+	id, _ := strconv.Atoi(r.FormValue("id")) 
+	for idx := range articles {
+		if idx == id {
+			articles = append(articles[:idx], articles[idx+1:]...)
+			return
+		}
+	}
 }
