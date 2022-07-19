@@ -22,7 +22,7 @@ func Router() *mux.Router {
 	r.HandleFunc("/update/{id}", UpdateArticle).Methods("GET")
 	r.HandleFunc("/deleteform", DeleteArticleForm).Methods("GET")
 	r.HandleFunc("/update", Update).Methods("POST")
-	r.HandleFunc("/delete", DeleteArticle).Methods("DELETE")
+	r.HandleFunc("/delete", DeleteArticle).Methods("POST")
 	return r
 }
 
@@ -95,8 +95,8 @@ func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
 func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	defer http.Redirect(w, r, "/", http.StatusSeeOther)
 	id, _ := strconv.Atoi(r.FormValue("id")) 
-	for idx := range articles {
-		if idx == id {
+	for idx, a := range articles {
+		if a.Id == id {
 			articles = append(articles[:idx], articles[idx+1:]...)
 			return
 		}
