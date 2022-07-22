@@ -14,3 +14,10 @@ type Athor struct {
 	Bio  string
 	Age  int
 }
+
+type User struct {
+	Id       int
+	Username string
+	Password string
+	Email    string
+}
