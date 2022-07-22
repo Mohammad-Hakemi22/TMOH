@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Mohammad-Hakemi22/tmoh/db"
+	"github.com/Mohammad-Hakemi22/tmoh/user"
 	"github.com/gorilla/mux"
 )
 
@@ -23,6 +24,8 @@ func Router() *mux.Router {
 	r.HandleFunc("/deleteform", DeleteArticleForm).Methods("GET")
 	r.HandleFunc("/update", Update).Methods("POST")
 	r.HandleFunc("/delete", DeleteArticle).Methods("POST")
+	r.HandleFunc("/user/signupform", user.SignUpForm)
+	r.HandleFunc("/user/signup", user.SignUp)
 	return r
 }
 
