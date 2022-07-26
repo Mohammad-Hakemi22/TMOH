@@ -12,17 +12,13 @@ import (
 
 var users []db.User
 
-// func Routers() {
-// 	r := mux.NewRouter()
-// 	r.HandleFunc("/user/signupform", signUpForm)
-// 	r.HandleFunc("/user/signup", signUp)
-// }
+
 
 func SignUpForm(w http.ResponseWriter, r *http.Request) {
 	tpl := template.Must(template.ParseFiles("D:/Go/TMOH/templates/user/signup.html"))
 	err := tpl.Execute(w, nil)
 	if err != nil {
-		http.Error(w, "Can't execute template", http.StatusInternalServerError)
+		http.Error(w, "Can't execute sign up template", http.StatusInternalServerError)
 		return
 	}
 }
