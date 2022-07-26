@@ -24,8 +24,12 @@ func Router() *mux.Router {
 	r.HandleFunc("/deleteform", DeleteArticleForm).Methods("GET")
 	r.HandleFunc("/update", Update).Methods("POST")
 	r.HandleFunc("/delete", DeleteArticle).Methods("POST")
+
+	// User
 	r.HandleFunc("/user/signupform", user.SignUpForm)
 	r.HandleFunc("/user/signup", user.SignUp)
+	r.HandleFunc("/user/signinform", user.SignInForm)
+	r.HandleFunc("/user/signin", user.SignIn)
 	return r
 }
 
