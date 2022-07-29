@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 )
 
 func SignInForm(w http.ResponseWriter, r *http.Request) {
@@ -19,20 +20,24 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	if len(users) == 0 {
+	if len(Users) == 0 {
 		http.Error(w, "not user exists", http.StatusInternalServerError)
 		return
 	}
 
-	for _, user := range users {
+	for _, user := range Users {
 		if user.Username == username {
 			if user.Password == password {
-				fmt.Fprintln(w, "welcome ")
+				url := fmt.Sprintf("/home/%s", strconv.Itoa(user.Id))
+				_ = user.SetLogin()
+				http.Redirect(w, r, url, http.StatusSeeOther)
 			} else {
 				fmt.Fprintln(w, "wrong password ")
+				return
 			}
 		} else {
 			fmt.Fprintln(w, "wrong username")
+			return
 		}
 	}
 }
