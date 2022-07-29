@@ -18,6 +18,7 @@ var articles = []db.Article{}
 func Router() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomePage).Methods("GET")
+	r.HandleFunc("/home/{id}", HomePageVIP).Methods("GET")
 	r.HandleFunc("/form", FormArticle).Methods("GET")
 	r.HandleFunc("/create", CreateArticle).Methods("POST")
 	r.HandleFunc("/update/{id}", UpdateArticle).Methods("GET")
@@ -34,6 +35,23 @@ func Router() *mux.Router {
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
+	var data []db.Article
+	tpl := template.Must(template.ParseFiles("D:/Go/TMOH/templates/home.html"))
+	for _, article := range articles {
+		if !article.VIP {
+			data = append(data, article)
+		}
+	}
+	err := tpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Can't execute template", http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func HomePageVIP(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 	tpl := template.Must(template.ParseFiles("D:/Go/TMOH/templates/home.html"))
 	err := tpl.Execute(w, articles)
 	if err != nil {
@@ -54,6 +72,7 @@ func FormArticle(w http.ResponseWriter, r *http.Request) {
 
 func CreateArticle(w http.ResponseWriter, r *http.Request) {
 	defer http.Redirect(w, r, "/", http.StatusSeeOther)
+	vip := false
 	rand.Seed(int64(time.Now().Nanosecond()))
 	id := rand.Intn(1000000)
 	title := r.FormValue("title")
@@ -63,7 +82,12 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("AuthorName")
 	bio := r.FormValue("AuthorBio")
 	age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
-	articles = append(articles, db.Article{Id: id, Title: title, Text: text, Date: date, Rate: rate, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
+	if r.FormValue("vip") == "0" {
+		vip = false
+	} else {
+		vip = true
+	}
+	articles = append(articles, db.Article{Id: id, Title: title, Text: text, Date: date, Rate: rate, VIP: vip, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
 	fmt.Println(articles)
 }
 
@@ -80,6 +104,7 @@ func UpdateArticle(w http.ResponseWriter, r *http.Request) {
 
 func Update(w http.ResponseWriter, r *http.Request) {
 	defer http.Redirect(w, r, "/", http.StatusSeeOther)
+	vip := false
 	title := r.FormValue("title")
 	text := r.FormValue("text")
 	date := time.Now().Format("01-02-2006 Monday")
@@ -87,7 +112,12 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("AuthorName")
 	bio := r.FormValue("AuthorBio")
 	age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
-	articles = append(articles, db.Article{Title: title, Text: text, Date: date, Rate: rate, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
+	if r.FormValue("vip") == "0" {
+		vip = false
+	} else {
+		vip = true
+	}
+	articles = append(articles, db.Article{Title: title, Text: text, Date: date, Rate: rate, VIP: vip, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
 }
 
 func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +131,7 @@ func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
 
 func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	defer http.Redirect(w, r, "/", http.StatusSeeOther)
-	id, _ := strconv.Atoi(r.FormValue("id")) 
+	id, _ := strconv.Atoi(r.FormValue("id"))
 	for idx, a := range articles {
 		if a.Id == id {
 			articles = append(articles[:idx], articles[idx+1:]...)
