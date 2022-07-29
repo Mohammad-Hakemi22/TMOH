@@ -7,6 +7,7 @@ type Article struct {
 	Date  string
 	Rate  float64
 	Athor *Athor
+	VIP   bool
 }
 
 type Athor struct {
@@ -20,4 +21,15 @@ type User struct {
 	Username string
 	Password string
 	Email    string
+	isLogin  bool
+}
+
+func (u *User) SetLogin() bool {
+	u.isLogin = true
+	return u.isLogin
+}
+
+func (u *User) SetLogout() bool {
+	u.isLogin = false
+	return u.isLogin
 }
