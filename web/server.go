@@ -5,10 +5,11 @@ import (
 	"net/http"
 
 	"github.com/Mohammad-Hakemi22/tmoh/routes"
+	"github.com/Mohammad-Hakemi22/tmoh/config"
 )
 
 func RunServer() {
 	r := routes.Router()
-
-	log.Fatalln(http.ListenAndServe(":8080", r))
+	log.Println("Listen And Serve on Port", config.AppConfig.Port)
+	log.Fatalln(http.ListenAndServe(config.AppConfig.Port, r))
 }
