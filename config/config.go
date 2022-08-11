@@ -15,6 +15,7 @@ type config struct {
 	DB_PASSWORD string
 	DB_NAME     string
 	DB_TIMEZONE string
+	SECRET_KEY string
 }
 
 var AppConfig config
@@ -31,4 +32,5 @@ func SetConfig() {
 	AppConfig.DB_NAME = os.Getenv("DB_NAME")
 	AppConfig.DB_PASSWORD = os.Getenv("DB_PASSWORD")
 	AppConfig.DB_TIMEZONE = os.Getenv("DB_TIMEZONE")
+	AppConfig.SECRET_KEY = os.Getenv("SECRET_KEY")
 }
