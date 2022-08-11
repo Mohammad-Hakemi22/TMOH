@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"go/token"
 	"html/template"
 	"log"
 	"math/rand"
@@ -26,27 +25,47 @@ func SignInForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	// username := r.FormValue("username")
-	// password := r.FormValue("password")
+	var authDetail model.Authentication
+	var authUser model.User
+	var token model.Token
 
-	// if len(Users) == 0 {
-	// 	http.Error(w, "not user exists", http.StatusInternalServerError)
-	// 	return
-	// }
+	connection, err := database.GetDatabase()
+	if err != nil {
+		log.Fatalln("something wrong in database connection", err)
+	}
+	defer database.Closedatabase(connection.Conn)
 
-	// for _, user := range Users {
-	// 	if user.Username == username {
-	// 		if user.Password == password {
-	// 			fmt.Fprintln(w, "login successfully")
-	// 		} else {
-	// 			fmt.Fprintln(w, "wrong password ")
-	// 			return
-	// 		}
-	// 	} else {
-	// 		fmt.Fprintln(w, "wrong username")
-	// 		return
-	// 	}
-	// }
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	authDetail.Username = username
+	authDetail.Password = password
+
+	connection.Conn.Where("email = ?", authDetail.Username).First(&authUser)
+	if authUser.Email == "" {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, "Username or Password is incorrect")
+		return
+	}
+
+	check := CheckPasswordHash(authDetail.Password, authUser.Password)
+	if !check {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, "Username or Password is incorrect")
+		return
+	}
+
+	validToken, err := GenerateJWT(authUser.Username, authUser.Role)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, "Failed to generate token")
+		return
+	}
+
+	token.Username = authUser.Email
+	token.Role = authUser.Role
+	token.TokenString = validToken
+
 }
 
 func SignUpForm(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +104,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	connection.Conn.Where("username = ?", user.Username).First(&dbuser)
 	if dbuser.Username != "" {
+		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, "username already in use!")
 		return
 	}
@@ -118,4 +138,9 @@ func GenerateJWT(username, role string) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
+}
+
+func CheckPasswordHash(password, passwordHash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(password), []byte(passwordHash))
+	return err == nil
 }
