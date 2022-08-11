@@ -2,14 +2,17 @@ package handlers
 
 import (
 	"fmt"
+	"go/token"
 	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
 	"time"
 
+	"github.com/Mohammad-Hakemi22/tmoh/config"
 	"github.com/Mohammad-Hakemi22/tmoh/database"
 	"github.com/Mohammad-Hakemi22/tmoh/model"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -99,4 +102,20 @@ func GeneratehashPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+func GenerateJWT(username, role string) (string, error) {
+	var signInKey = []byte(config.AppConfig.SECRET_KEY)
+	token := jwt.New(jwt.SigningMethodES256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["authorized"] = true
+	claims["username"] = username
+	claims["role"] = role
+	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
+	tokenString, err := token.SignedString(signInKey)
+	if err != nil {
+		log.Fatalln("Something Went Wrong in generate jwt:", err)
+		return "", err
+	}
+	return tokenString, nil
 }
