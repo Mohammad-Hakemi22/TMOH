@@ -1,6 +1,6 @@
 create .env file in config dir
 
-Port=****
+Port=:****
 
 DB_HOST=****
 
@@ -13,3 +13,5 @@ DB_PASSWORD=****
 DB_NAME=****
 
 DB_TIMEZONE=****
+
+SECRET_KEY=****
