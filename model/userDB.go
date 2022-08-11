@@ -1,7 +1,7 @@
 package model
 
 type User struct {
-	Id       int `json:"id"`
+	Id       int    `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
@@ -9,12 +9,12 @@ type User struct {
 }
 
 type Authentication struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type Token struct {
 	Role        string `json:"role"`
-	Email       string `json:"email"`
+	Username    string `json:"username"`
 	TokenString string `json:"token"`
 }
