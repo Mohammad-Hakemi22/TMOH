@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Mohammad-Hakemi22/tmoh/config"
@@ -15,7 +16,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var tokenCache []model.Token // temp
+var tokenCache []string // temp
 
 func SignInForm(w http.ResponseWriter, r *http.Request) {
 	tpl := template.Must(template.ParseFiles("./templates/user/signin.html"))
@@ -27,7 +28,6 @@ func SignInForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	defer http.Redirect(w, r, "/", http.StatusSeeOther)
 	var authDetail model.Authentication
 	var authUser model.User
 	var token model.Token
@@ -65,11 +65,15 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token.Username = authUser.Email
+	token.Username = authUser.Username
 	token.Role = authUser.Role
 	token.TokenString = validToken
-	tokenCache = append(tokenCache, token)
-	fmt.Println(tokenCache)
+	tokenCache = append(tokenCache, token.TokenString)
+	idx := len(tokenCache)
+	t := strings.Split(tokenCache[idx-1], ".")
+	urlS := fmt.Sprint("/" + t[0])
+	url := SpaceFieldsJoin(urlS)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
 func SignUpForm(w http.ResponseWriter, r *http.Request) {
@@ -133,8 +137,8 @@ func GenerateJWT(username, role string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["authorized"] = true
-	claims["username"] = username
-	claims["role"] = role
+	claims["username"] = SpaceFieldsJoin(username)
+	claims["role"] = SpaceFieldsJoin(role)
 	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
 	tokenString, err := token.SignedString(signInKey)
 	if err != nil {
@@ -147,4 +151,8 @@ func GenerateJWT(username, role string) (string, error) {
 func CheckPasswordHash(password, passwordHash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password))
 	return err == nil
+}
+
+func SpaceFieldsJoin(str string) string {
+	return strings.Join(strings.Fields(str), "")
 }
