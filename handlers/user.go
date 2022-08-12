@@ -15,6 +15,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var tokenCache []model.Token // temp
+
 func SignInForm(w http.ResponseWriter, r *http.Request) {
 	tpl := template.Must(template.ParseFiles("./templates/user/signin.html"))
 	err := tpl.Execute(w, nil)
@@ -25,6 +27,7 @@ func SignInForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
+	defer http.Redirect(w, r, "/", http.StatusSeeOther)
 	var authDetail model.Authentication
 	var authUser model.User
 	var token model.Token
@@ -41,8 +44,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	authDetail.Username = username
 	authDetail.Password = password
 
-	connection.Conn.Where("email = ?", authDetail.Username).First(&authUser)
-	if authUser.Email == "" {
+	connection.Conn.Where("username = ?", authDetail.Username).First(&authUser)
+	if authUser.Username == "" {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, "Username or Password is incorrect")
 		return
@@ -65,7 +68,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	token.Username = authUser.Email
 	token.Role = authUser.Role
 	token.TokenString = validToken
-
+	tokenCache = append(tokenCache, token)
+	fmt.Println(tokenCache)
 }
 
 func SignUpForm(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +130,7 @@ func GeneratehashPassword(password string) (string, error) {
 
 func GenerateJWT(username, role string) (string, error) {
 	var signInKey = []byte(config.AppConfig.SECRET_KEY)
-	token := jwt.New(jwt.SigningMethodES256)
+	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["authorized"] = true
 	claims["username"] = username
@@ -141,6 +145,6 @@ func GenerateJWT(username, role string) (string, error) {
 }
 
 func CheckPasswordHash(password, passwordHash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(password), []byte(passwordHash))
+	err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password))
 	return err == nil
 }
