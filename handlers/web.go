@@ -22,7 +22,15 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Can't execute template", http.StatusInternalServerError)
 		return
 	}
+}
 
+func HomePageVip(w http.ResponseWriter, r *http.Request) {
+	tpl := template.Must(template.ParseFiles("./templates/home.html"))
+	err := tpl.Execute(w, articles)
+	if err != nil {
+		http.Error(w, "Can't execute template", http.StatusInternalServerError)
+		return
+	}
 }
 
 func FormArticle(w http.ResponseWriter, r *http.Request) {
