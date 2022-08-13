@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var tokenCache []string // temp
+// var tokenCache []string // temp
 
 func SignInForm(w http.ResponseWriter, r *http.Request) {
 	tpl := template.Must(template.ParseFiles("./templates/user/signin.html"))
@@ -68,12 +68,13 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	token.Username = authUser.Username
 	token.Role = authUser.Role
 	token.TokenString = validToken
-	tokenCache = append(tokenCache, token.TokenString)
-	idx := len(tokenCache)
-	t := strings.Split(tokenCache[idx-1], ".")
-	urlS := fmt.Sprint("/" + t[0])
-	url := SpaceFieldsJoin(urlS)
-	http.Redirect(w, r, url, http.StatusSeeOther)
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Value:   token.TokenString,
+		Path:    "/vip",
+		Expires: time.Now().Add(time.Minute * 5),
+	})
+	http.Redirect(w, r, "/vip", http.StatusSeeOther)
 }
 
 func SignUpForm(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +140,7 @@ func GenerateJWT(username, role string) (string, error) {
 	claims["authorized"] = true
 	claims["username"] = SpaceFieldsJoin(username)
 	claims["role"] = SpaceFieldsJoin(role)
-	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * 20).Unix()
 	tokenString, err := token.SignedString(signInKey)
 	if err != nil {
 		log.Fatalln("Something Went Wrong in generate jwt:", err)
