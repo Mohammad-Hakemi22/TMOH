@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Mohammad-Hakemi22/tmoh/config"
 	db "github.com/Mohammad-Hakemi22/tmoh/model"
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
-	
 )
 
 var articles = []db.Article{}
@@ -25,12 +26,41 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomePageVip(w http.ResponseWriter, r *http.Request) {
-	tpl := template.Must(template.ParseFiles("./templates/home.html"))
-	err := tpl.Execute(w, articles)
-	if err != nil {
-		http.Error(w, "Can't execute template", http.StatusInternalServerError)
+	tok, _ := r.Cookie("token")
+	tokenString := tok.Value
+	if tokenString == "" {
+		fmt.Fprintln(w, "No token found!")
 		return
 	}
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("there was an error in parsing")
+		}
+		return []byte(config.AppConfig.SECRET_KEY), nil
+	})
+	if err != nil {
+		fmt.Println(w, "Your Token has been expired", err.Error())
+		http.Redirect(w, r, "/user/signinform", http.StatusSeeOther)
+		return
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if claims["role"] == "admin" {
+			tpl := template.Must(template.ParseFiles("./templates/home.html"))
+			err := tpl.Execute(w, articles)
+			if err != nil {
+				http.Error(w, "Can't execute template", http.StatusInternalServerError)
+				return
+			}
+			return
+
+		} else if claims["role"] == "user" {
+
+			r.Header.Set("Role", "user")
+			return
+		}
+	}
+
 }
 
 func FormArticle(w http.ResponseWriter, r *http.Request) {
