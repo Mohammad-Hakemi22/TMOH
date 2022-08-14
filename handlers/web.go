@@ -16,8 +16,8 @@ import (
 
 var articles = []db.Article{}
 
-func HomePage(w http.ResponseWriter, r *http.Request) {
-	tpl := template.Must(template.ParseFiles("./templates/home.html"))
+func IndexPage(w http.ResponseWriter, r *http.Request) {
+	tpl := template.Must(template.ParseFiles("./templates/index.html"))
 	err := tpl.Execute(w, articles)
 	if err != nil {
 		http.Error(w, "Can't execute template", http.StatusInternalServerError)
@@ -25,13 +25,13 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HomePageVip(w http.ResponseWriter, r *http.Request) {
+func HomePage(w http.ResponseWriter, r *http.Request) {
 	tok, _ := r.Cookie("token")
-	tokenString := tok.Value
-	if tokenString == "" {
-		fmt.Fprintln(w, "No token found!")
+	if tok == nil {
+		http.Redirect(w, r, "/user/signinform", http.StatusSeeOther)
 		return
 	}
+	tokenString := tok.Value
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("there was an error in parsing")
@@ -45,7 +45,7 @@ func HomePageVip(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if claims["role"] == "admin" {
+		if claims["role"] == "vipUser" || claims["role"] == "author" {
 			tpl := template.Must(template.ParseFiles("./templates/home.html"))
 			err := tpl.Execute(w, articles)
 			if err != nil {
