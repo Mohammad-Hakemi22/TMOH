@@ -71,10 +71,10 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
 		Value:   token.TokenString,
-		Path:    "/vip",
+		Path:    "/home",
 		Expires: time.Now().Add(time.Minute * 5),
 	})
-	http.Redirect(w, r, "/vip", http.StatusSeeOther)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
 func SignUpForm(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +96,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		database.Closedatabase(connection.Conn)
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}()
 
 	rand.Seed(int64(time.Now().Nanosecond()))
