@@ -13,7 +13,7 @@ func InitialMigration() {
 		log.Fatalln("something wrong in database connection", err)
 	}
 	defer Closedatabase(connection.Conn)
-	connection.Conn.AutoMigrate(model.User{})
+	connection.Conn.AutoMigrate(&model.User{}, &model.Article{})
 }
 
 func Closedatabase(connection *gorm.DB) {
