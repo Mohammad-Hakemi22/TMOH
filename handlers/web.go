@@ -3,18 +3,22 @@ package handlers
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/Mohammad-Hakemi22/tmoh/config"
-	db "github.com/Mohammad-Hakemi22/tmoh/model"
+	"github.com/Mohammad-Hakemi22/tmoh/database"
+	"github.com/Mohammad-Hakemi22/tmoh/model"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
 )
 
-var articles = []db.Article{}
+type Data map[string]interface{}
+
+var articles = []model.Article{}
 
 func IndexPage(w http.ResponseWriter, r *http.Request) {
 	tpl := template.Must(template.ParseFiles("./templates/index.html"))
@@ -26,6 +30,7 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
+	var authorId string
 	tok, _ := r.Cookie("token")
 	if tok == nil {
 		http.Redirect(w, r, "/user/signinform", http.StatusSeeOther)
@@ -46,8 +51,14 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if claims["role"] == "vipUser" || claims["role"] == "author" {
+			authorId = fmt.Sprintf("%v", claims["id"])
+			articles = append(articles, model.Article{Title: "hi", Text: "text", Date: "date", Rate: 5, Vip: true})
 			tpl := template.Must(template.ParseFiles("./templates/home.html"))
-			err := tpl.Execute(w, articles)
+			data := Data{
+				"Url":      authorId,
+				"Articles": articles,
+			}
+			err := tpl.Execute(w, data)
 			if err != nil {
 				http.Error(w, "Can't execute template", http.StatusInternalServerError)
 				return
@@ -64,8 +75,12 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func FormArticle(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	data := Data{
+		"Url": params["id"],
+	}
 	tpl := template.Must(template.ParseFiles("./templates/create.html"))
-	err := tpl.Execute(w, "")
+	err := tpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, "Can't execute template", http.StatusInternalServerError)
 		return
@@ -73,7 +88,17 @@ func FormArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateArticle(w http.ResponseWriter, r *http.Request) {
-	defer http.Redirect(w, r, "/", http.StatusSeeOther)
+	params := mux.Vars(r)
+	var article model.Article
+	connection, err := database.GetDatabase()
+	if err != nil {
+		log.Fatalln("something wrong in database connection", err)
+	}
+	defer func() {
+		database.Closedatabase(connection.Conn)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+	}()
+
 	vip := false
 	rand.Seed(int64(time.Now().Nanosecond()))
 	id := rand.Intn(1000000)
@@ -81,16 +106,20 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	date := time.Now().Format("01-02-2006 Monday")
 	rate, _ := strconv.ParseFloat(r.FormValue("rate"), 64)
-	name := r.FormValue("AuthorName")
-	bio := r.FormValue("AuthorBio")
-	age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
 	if r.FormValue("vip") == "0" {
 		vip = false
 	} else {
 		vip = true
 	}
-	articles = append(articles, db.Article{Id: id, Title: title, Text: text, Date: date, Rate: rate, VIP: vip, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
-	fmt.Println(articles)
+	article.Id = id
+	article.Title = title
+	article.Text = text
+	article.Date = date
+	article.Rate = rate
+	article.Vip = vip
+	article.AuthorID, _ = strconv.Atoi(params["id"])
+	connection.Conn.Create(&article)
+
 }
 
 func UpdateArticle(w http.ResponseWriter, r *http.Request) {
@@ -111,15 +140,15 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	date := time.Now().Format("01-02-2006 Monday")
 	rate, _ := strconv.ParseFloat(r.FormValue("rate"), 64)
-	name := r.FormValue("AuthorName")
-	bio := r.FormValue("AuthorBio")
-	age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
+	// name := r.FormValue("AuthorName")
+	// bio := r.FormValue("AuthorBio")
+	// age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
 	if r.FormValue("vip") == "0" {
 		vip = false
 	} else {
 		vip = true
 	}
-	articles = append(articles, db.Article{Title: title, Text: text, Date: date, Rate: rate, VIP: vip, Athor: &db.Athor{Name: name, Bio: bio, Age: age}})
+	articles = append(articles, model.Article{Title: title, Text: text, Date: date, Rate: rate, Vip: vip})
 }
 
 func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
