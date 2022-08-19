@@ -7,7 +7,7 @@
     <title>TMOH</title>
 </head>
 <body>
-    <form action="/create" method="post" enctype="multipart/form-data">
+    <form action="/create/{{.Url}}" method="post" enctype="multipart/form-data">
         <br>
         <br>
         <input type="text" name="title" placeholder="title">
@@ -29,7 +29,7 @@
         <br>
         <br>
         VIP ?
-        <input type="checkbox" name="vip" value="1">
+        <input type="checkbox" name="vip" value="0">
         <br>
         <br>
         <button type="submit">Upload</button>

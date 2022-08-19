@@ -9,24 +9,19 @@
 </head>
 
 <body>
-	<h1>hello</h1>
-	<h5><a href="/form">Create Article</a></h5>
+	<h5><a href="/form/{{.Url}}">Create Article</a></h5>
 	<h5><a href="/deleteform">Delete Article</a></h5>
 	<h5><a href="/user/signupform">Signup</a></h5>
 	<h5><a href="/user/signinform">Signin</a></h5>
 	<ul>
-		{{range .}}
+		{{range .Articles}}
 		<div>
 			<li>{{.Id}}</li>
 			<li>{{.Title}}</li>
 			<li>{{.Text}}</li>
 			<li>{{.Date}}</li>
 			<li>{{.Rate}}</li>
-			<li>{{.Athor.Name}}</li>
-			<li>{{.Athor.Bio}}</li>
-			<li>{{.Athor.Age}}</li>
 			<li>VIP: {{.VIP}}</li>
-
 		</div>
 		{{end}}
 	</ul>
