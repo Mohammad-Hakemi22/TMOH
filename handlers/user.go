@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -58,7 +59,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validToken, err := GenerateJWT(authUser.Username, authUser.Role)
+	validToken, err := GenerateJWT(authUser.Username, authUser.Role, authUser.Id)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, "Failed to generate token")
@@ -66,6 +67,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token.Username = authUser.Username
+	token.Id = strconv.Itoa(authUser.Id)
 	token.Role = authUser.Role
 	token.TokenString = validToken
 	http.SetCookie(w, &http.Cookie{
@@ -133,12 +135,13 @@ func GeneratehashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func GenerateJWT(username, role string) (string, error) {
+func GenerateJWT(username, role string, userId int) (string, error) {
 	var signInKey = []byte(config.AppConfig.SECRET_KEY)
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["authorized"] = true
 	claims["username"] = SpaceFieldsJoin(username)
+	claims["id"] = SpaceFieldsJoin(strconv.Itoa(userId))
 	claims["role"] = SpaceFieldsJoin(role)
 	claims["exp"] = time.Now().Add(time.Minute * 20).Unix()
 	tokenString, err := token.SignedString(signInKey)
