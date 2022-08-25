@@ -16,12 +16,14 @@
 	<ul>
 		{{range .Articles}}
 		<div>
+			<hr>
 			<li>{{.Id}}</li>
 			<li>{{.Title}}</li>
 			<li>{{.Text}}</li>
 			<li>{{.Date}}</li>
 			<li>{{.Rate}}</li>
-			<li>VIP: {{.VIP}}</li>
+			<li>VIP: {{.Vip}}</li>
+			<hr>
 		</div>
 		{{end}}
 	</ul>
