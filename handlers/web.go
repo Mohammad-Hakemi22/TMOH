@@ -30,7 +30,15 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "text/html")
 	var authorId string
+
+	connection, err := database.GetDatabase()
+	if err != nil {
+		log.Fatalln("something wrong in database connection", err)
+	}
+	defer database.Closedatabase(connection.Conn)
+
 	tok, _ := r.Cookie("token")
 	if tok == nil {
 		http.Redirect(w, r, "/user/signinform", http.StatusSeeOther)
@@ -50,9 +58,11 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		var articles []model.Article
 		if claims["role"] == "vipUser" || claims["role"] == "author" {
 			authorId = fmt.Sprintf("%v", claims["id"])
-			articles = append(articles, model.Article{Title: "hi", Text: "text", Date: "date", Rate: 5, Vip: true})
+			results := connection.Conn.Find(&articles)
+			fmt.Println(results.RowsAffected)
 			tpl := template.Must(template.ParseFiles("./templates/home.html"))
 			data := Data{
 				"Url":      authorId,
@@ -60,6 +70,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 			}
 			err := tpl.Execute(w, data)
 			if err != nil {
+				log.Println(err)
 				http.Error(w, "Can't execute template", http.StatusInternalServerError)
 				return
 			}
