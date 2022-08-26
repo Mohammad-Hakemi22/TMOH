@@ -77,7 +77,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 			return
 
 		} else if claims["role"] == "user" {
-
+			// showing just non vip articles
 			r.Header.Set("Role", "user")
 			return
 		}
@@ -172,12 +172,14 @@ func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteArticle(w http.ResponseWriter, r *http.Request) {
-	defer http.Redirect(w, r, "/", http.StatusSeeOther)
-	id, _ := strconv.Atoi(r.FormValue("id"))
-	for idx, a := range articles {
-		if a.Id == id {
-			articles = append(articles[:idx], articles[idx+1:]...)
-			return
-		}
+	connection, err := database.GetDatabase()
+	if err != nil {
+		log.Fatalln("something wrong in database connection", err)
 	}
+	defer func() {
+		database.Closedatabase(connection.Conn)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+	}()
+	id, _ := strconv.Atoi(r.FormValue("id"))
+	connection.Conn.Delete(&model.Article{}, id)
 }
