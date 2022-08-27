@@ -134,14 +134,17 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateArticle(w http.ResponseWriter, r *http.Request) {
-	tpl := template.Must(template.ParseFiles("./templates/update.html"))
+	var article model.Article
 	params := mux.Vars(r)
-	for idx, a := range articles {
-		if id, _ := strconv.Atoi(params["id"]); id == a.Id {
-			tpl.Execute(w, a)
-			articles = append(articles[:idx], articles[idx+1:]...)
-		}
+	id, _ := strconv.Atoi(params["id"])
+	connection, err := database.GetDatabase()
+	if err != nil {
+		log.Fatalln("something wrong in database connection", err)
 	}
+	defer database.Closedatabase(connection.Conn)
+	tpl := template.Must(template.ParseFiles("./templates/update.html"))
+	connection.Conn.Find(&article, id)
+	tpl.Execute(w, article)
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
@@ -151,9 +154,6 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	date := time.Now().Format("01-02-2006 Monday")
 	rate, _ := strconv.ParseFloat(r.FormValue("rate"), 64)
-	// name := r.FormValue("AuthorName")
-	// bio := r.FormValue("AuthorBio")
-	// age, _ := strconv.Atoi(r.FormValue("AuthorAge"))
 	if r.FormValue("vip") == "0" {
 		vip = false
 	} else {
