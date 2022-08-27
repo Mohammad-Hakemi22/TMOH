@@ -10,22 +10,28 @@
     <form action="/update" method="post" enctype="multipart/form-data">
         <br>
         <br>
+        Title:
         <input type="text" name="title" placeholder="title" value="{{.Title}}">
         <br>
         <br>
+        Text:
         <input type="text" name="text" placeholder="text" value="{{.Text}}">
         <br>
         <br>
+        Date:
+        <input type="text" name="date" placeholder="text" value="{{.Date}}">
+        <br>
+        <br>
+        Rate:
         <input type="text" name="rate" placeholder="3.6" value="{{.Rate}}">
         <br>
         <br>
-        <input type="text" name="AuthorName" placeholder="Name" value="{{.Athor.Name}}">
+        Vip:
+        <input type="checkbox" name="vip" value="{{.Vip}}">
         <br>
         <br>
-        <input type="text" name="AuthorBio" placeholder="Bio" value="{{.Athor.Bio}}">
-        <br>
-        <br>
-        <input type="text" name="AuthorAge" placeholder="Age" value="{{.Athor.Age}}">
+        Author ID:
+        <input type="text" name="AuthorID" placeholder="Author ID" value="{{.AthorID}}">
         <br>
         <br>
         <button type="submit">Update</button>
