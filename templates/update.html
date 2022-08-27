@@ -8,6 +8,8 @@
 </head>
 <body>
     <form action="/update" method="post" enctype="multipart/form-data">
+        ID:
+        <input type="text" name="id" placeholder="id" value="{{.Id}}">
         <br>
         <br>
         Title:
@@ -31,11 +33,10 @@
         <br>
         <br>
         Author ID:
-        <input type="text" name="AuthorID" placeholder="Author ID" value="{{.AthorID}}">
+        <input type="text" name="AuthorID" placeholder="Author ID" value="{{.AuthorID}}">
         <br>
         <br>
         <button type="submit">Update</button>
-
     </form>
 </body>
 </html>
