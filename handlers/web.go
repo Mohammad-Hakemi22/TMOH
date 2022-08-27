@@ -148,8 +148,17 @@ func UpdateArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
-	defer http.Redirect(w, r, "/", http.StatusSeeOther)
+	var article model.Article
+	connection, err := database.GetDatabase()
+	if err != nil {
+		log.Fatalln("something wrong in database connection", err)
+	}
+	defer func() {
+		database.Closedatabase(connection.Conn)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+	}()
 	vip := false
+	id, _ := strconv.Atoi(r.FormValue("id"))
 	title := r.FormValue("title")
 	text := r.FormValue("text")
 	date := time.Now().Format("01-02-2006 Monday")
@@ -159,7 +168,13 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	} else {
 		vip = true
 	}
-	articles = append(articles, model.Article{Title: title, Text: text, Date: date, Rate: rate, Vip: vip})
+	article.Title = title
+	article.Text = text
+	article.Date = date
+	article.Rate = rate
+	article.Vip = vip
+	article.AuthorID, _ = strconv.Atoi(r.FormValue("AuthorID"))
+	connection.Conn.Where("id = ?", id).Updates(article)
 }
 
 func DeleteArticleForm(w http.ResponseWriter, r *http.Request) {
