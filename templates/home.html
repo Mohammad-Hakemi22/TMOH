@@ -10,8 +10,6 @@
 
 <body>
 	<h5><a href="/form/{{.Url}}">Create Article</a></h5>
-	<h5><a href="/deleteform">Delete Article</a></h5>
-	<h5><a href="/update/{id}">Update Article</a></h5>
 	<h5><a href="/user/signupform">Signup</a></h5>
 	<h5><a href="/user/signinform">Signin</a></h5>
 	<ul>
@@ -24,6 +22,8 @@
 			<li>{{.Date}}</li>
 			<li>{{.Rate}}</li>
 			<li>VIP: {{.Vip}}</li>
+			<li><a href="update/{{.Id}}">Update</a></li>
+			<li><a href="delete/{{.Id}}">Delete</a></li>
 			<hr>
 		</div>
 		{{end}}
